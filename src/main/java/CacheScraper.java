@@ -1,14 +1,13 @@
 import lombok.SneakyThrows;
 
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.*;
 
 public class CacheScraper implements Scraper {
-    private Scraper scraper;
+    private final Scraper scraper;
     private final String dbPath = "jdbc:sqlite:urls.db";
-    private Statement statement;
+    private final Statement statement;
     private int n_html_pages;
     BufferedWriter writer;
 
@@ -27,6 +26,7 @@ public class CacheScraper implements Scraper {
     @SneakyThrows
     public boolean isInCache(String url) {
         ResultSet rs = statement.executeQuery("select url from urls");
+//        ResultSet rs = statement.executeQuery("select id, url from urls where url = '" + url + "'");
         boolean found_url = false;
         while (rs.next()) {
             String retrieved_url = rs.getString("url");
@@ -59,7 +59,12 @@ public class CacheScraper implements Scraper {
         writer = new BufferedWriter(new FileWriter(fileName));
         writer.write(html);
 
-        n_html_pages += 1;
+        ResultSet rs = statement.getGeneratedKeys();
+
+        if(rs.next()){
+            n_html_pages = rs.getInt(1);
+            System.out.println("n_html_pages == " + n_html_pages);
+        }
     }
 
 
